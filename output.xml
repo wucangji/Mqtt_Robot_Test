@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generated="20151021 11:36:28.866" generator="Robot 2.9 (Python 2.7.10 on darwin)">
+<suite source="/Users/canwu/PycharmProjects/Mqtt_Robot_Test/030LayerTest.robot" id="s1" name="030LayerTest">
+<test id="s1-t1" name="1.11 Valid Input for AE without name">
+<kw name="Connect" library="mqttlib">
+<doc>Connect to an MQTT broker. This is a pre-requisite step for publish</doc>
+<arguments>
+<arg>${mqtthost}</arg>
+<arg>${port}</arg>
+</arguments>
+<assign>
+<var>${connection}</var>
+</assign>
+<msg timestamp="20151021 11:36:28.922" level="INFO">Connecting to 127.0.0.1 at port 1883</msg>
+<msg timestamp="20151021 11:36:28.925" level="INFO">${connection} = &lt;paho.mqtt.client.Client object at 0x110abbe10&gt;</msg>
+<status status="PASS" endtime="20151021 11:36:28.925" starttime="20151021 11:36:28.921"></status>
+</kw>
+<kw name="Publish" library="mqttlib">
+<doc>Publish a message to a topic with specified qos and retained flag.</doc>
+<arguments>
+<arg>/oneM2M/req/AE-ID/mockCSE</arg>
+<arg>{\"op\" : \"1\",\"to\" : \"mockCSE\",\"rqi\" : \"1\",\"fr\" : \"AE-ID\",\"ty\" : \"2\",\"pc\" :{\"api\":\"mockApplication\",\"apn\":\"mockApp\",\"or\":\"http://ontology_URL\"}}</arg>
+</arguments>
+<msg timestamp="20151021 11:36:28.926" level="INFO">Publish topic: /oneM2M/req/AE-ID/mockCSE, message: {"op" : "1","to" : "mockCSE","rqi" : "1","fr" : "AE-ID","ty" : "2","pc" :{"api":"mockApplication","apn":"mockApp","or":"http://ontology_URL"}}, qos: 0, retain: False</msg>
+<status status="PASS" endtime="20151021 11:36:28.926" starttime="20151021 11:36:28.926"></status>
+</kw>
+<kw name="Subscribe And Receive1" library="mqttlib">
+<doc>Subscribe to a topic and return one message payloads received</doc>
+<arguments>
+<arg>/oneM2M/resp/mockCSE/AE-ID</arg>
+<arg>1</arg>
+<arg>1</arg>
+</arguments>
+<assign>
+<var>${response}</var>
+</assign>
+<msg timestamp="20151021 11:36:28.927" level="INFO">Subscribing to topic: /oneM2M/resp/mockCSE/AE-ID</msg>
+<msg timestamp="20151021 11:36:29.934" level="INFO">${response} = {u'pc': u'{"ct":"20151021T153628Z","aei":"AE-ID","ri":"1t","lt":"20151021T153628Z","pi":"/mockCSE/2","api":"mockApplication","rn":"AE-ID"}', u'rqi': u'1', u'rsc': u'2001'}</msg>
+<status status="PASS" endtime="20151021 11:36:29.934" starttime="20151021 11:36:28.927"></status>
+</kw>
+<doc>Valid Input for AE without name</doc>
+<status status="PASS" endtime="20151021 11:36:29.934" critical="yes" starttime="20151021 11:36:28.920"></status>
+</test>
+<doc>Test for layers AE/CONTAINER/CONTENTINSTANCE</doc>
+<status status="PASS" endtime="20151021 11:36:29.935" starttime="20151021 11:36:28.869"></status>
+</suite>
+<statistics>
+<total>
+<stat fail="0" pass="1">Critical Tests</stat>
+<stat fail="0" pass="1">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat fail="0" id="s1" name="030LayerTest" pass="1">030LayerTest</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

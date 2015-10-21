@@ -1,13 +1,102 @@
-import paho.mqtt.client as mqtt 
-import paho.mqtt.publish as publish
-import robot
-import time
-import re
-
 from robot.libraries.DateTime import convert_time
 from robot.api import logger
+import paho.mqtt.client as mqtt
+import time
+import re
+import paho.mqtt.publish as publish
+import json
 
-class MQTTKeywords(object):
+# # The callback for when the client receives a CONNACK response from the server.
+# def on_connect(client, userdata, flags, rc):
+#     print("Connected with result code "+str(rc))
+#
+#     # Subscribing in on_connect() means that if we lose the connection and
+#     # reconnect then subscriptions will be renewed.
+#     client.subscribe("$SYS/#")
+#
+# # The callback for when a PUBLISH message is received from the server.
+# def on_message(client, userdata, msg):
+#     print(msg.topic+" "+str(msg.payload))
+#
+# client = mqtt.Client()
+# # client.on_connect = on_connect
+# client.on_message = on_message
+#
+# client.connect("localhost", 1883, 60)
+
+# request_payload = '''
+# {
+#     %s
+# }
+# '''
+#
+# class req_payload:
+#     """
+#     Create the request payload.
+#     """
+#
+#     def __init__(self, pc):
+#         self.nm = ""
+#         self.pc ="\"pc\" : {%s}" % (pc)
+#
+#     def add_operation(self, op):
+#         self.op = "\"op\" : \"%s\"," % (op)
+#
+#     def add_to(self, to):
+#         self.to = "\"to\" : \"%s\"," % (to)
+#
+#     def add_rqi(self, rqi):
+#         self.rqi = "\"rqi\" : \"%s\"," % (rqi)
+#
+#     def add_fr(self, fr):
+#         self.fr = "\"fr\" : \"%s\"," % (fr)
+#
+#     def add_ty(self, ty):
+#         self.ty = "\"rqi\" : \"%s\"," % (ty)
+#
+#     def add_nm(self, nm):
+#         self.nm = "\"nm\" : \"%s\"," % (nm)
+#
+#     def show(self):
+#         self.payload = self.op + self.to + self.rqi + self.fr + self.ty
+#         if self.nm != None:
+#             self.payload += self.nm
+#         return "{" + self.payload + self.pc + "}"
+#
+#
+# class AE_create:
+#     """
+#     Create the create_resource_AE "pc".
+#     """
+#
+#     def __init__(self):
+#         self._orr = ""
+#         self._lbl = ""
+#
+#     def add_api(self, api):
+#         self.api = "\"api\" : \"%s\"," % (api)
+#
+#     def add_apn(self, apn):
+#         self.apn = "\"apn\" : \"%s\"," % (apn)
+#
+#     def add_or(self, orr):
+#         self._orr = "\"or\" : \"%s\"," % (orr)
+#
+#     def add_lbl(self, lbl):
+#         """addLabel, label is a list"""
+#         assert isinstance(lbl,(list,tuple))
+#         self._lbl = "\"lbl\" : %s," % (lbl)
+#
+#     def show(self):
+#         self.mandatory = self.api + self.apn
+#         if self._orr != "":
+#             self.mandatory += self._orr
+#         if self._lbl != "":
+#             self.mandatory += self._lbl
+#         return "{" + self.mandatory + "}"
+
+
+class mqttlib(object):
 
     # Timeout used for all blocking loop* functions. This serves as a
     # safeguard to not block forever, in case of unexpected/unhandled errors
@@ -34,6 +123,7 @@ class MQTTKeywords(object):
         | Connect | 127.0.0.1 | clean_session=${false} |
         """
         logger.info('Connecting to %s at port %s' % (broker, port))
+        # self._loop_timeout = convert_time(self.LOOP_TIMEOUT)
         self._connected = False
         self._unexpected_disconnect = False
         self._mqttc = mqtt.Client(client_id, clean_session)
@@ -83,6 +173,7 @@ class MQTTKeywords(object):
 
         if mid != self._mid:
             logger.warn('mid wasn\'t matched: %s' % mid)
+        # client.publish(topic, message)
 
     def subscribe(self, topic, qos, timeout=1, limit=1):
         """ Subscribe to a topic and return a list of message payloads received
@@ -119,6 +210,28 @@ class MQTTKeywords(object):
                 time.sleep(1)
                 break
         return self._messages
+
+    def subscribe_and_receive1(self, topic, qos, timeout=1):
+            """ Subscribe to a topic and return one message payloads received
+                within the specified time.
+            `topic` topic to subscribe to
+            `qos` quality of service for the subscription
+            `timeout` duration of subscription
+            Examples:
+            Subscribe and get one message received within 5 seconds
+            | ${messages}= | Subscribe | test/test | qos=1 | timeout=5
+            """
+            seconds = convert_time(timeout)
+            self._message = ""
+
+            logger.info('Subscribing to topic: %s' % topic)
+            self._mqttc.subscribe(str(topic), int(qos))
+            self._mqttc.on_message = self._on_message_one
+
+            timer_start = time.time()
+            while time.time() < timer_start + seconds:
+                self._mqttc.loop()
+            return json.loads(self._message)
 
     def subscribe_and_validate(self, topic, qos, payload, timeout=1):
 
@@ -261,7 +374,13 @@ class MQTTKeywords(object):
     def _on_message_list(self, client, userdata, message):
         logger.debug('Received message: %s on topic: %s with QoS: %s'
             % (str(message.payload), message.topic, str(message.qos)))
-        self._messages.append(message.payload)
+        self._messages.append(str(message.payload))
+
+    def _on_message_one(self, client, userdata, message):
+        """Return only on message."""
+        logger.debug('Received message: %s on topic: %s with QoS: %s'
+            % (str(message.payload), message.topic, str(message.qos)))
+        self._message = (str(message.payload))
 
     def _on_connect(self, client, userdata, flags, rc):
         self._connected = True if rc == 0 else False
@@ -280,5 +399,48 @@ class MQTTKeywords(object):
         self._mid = mid
 
 
+# testAE = AE_create()
+# testAE.add_api("api1")
+# testAE.add_apn("apn1")
+# testAE.add_lbl(["label1"])
+# print testAE.show()
+#
+# Test = req_payload(testAE.show())
+# Test.add_operation("1")
+# Test.add_to("mockCSE")
+# Test.add_rqi("2")
+# Test.add_fr("AE-ID")
+# Test.add_ty("2")
+# Test.add_nm("testAE")
+# print Test.show()
+# #
+# print(12121)
+# Connection = MQTT()
+# Connection.connect("127.0.0.1", 1883)
+# Connection.publish("/oneM2M/req/AE-ID/mockCSE", Test.show())
+# mess = Connection.subscribe_and_receive1("/oneM2M/resp/mockCSE/AE-ID", 1, 1)
+#
+# print(mess)
+# print(mess['pc'])
 
+#
+# def connect_to_iotdm(host, port):
+#     Connection = MQTT(host, port)
+#     return Connection
+#
+#
+# def publish1(Connection, topic, message):
+#     Connection.publish(topic, message)
+#
+#
+# def subscribe(Connection, topic):
+#     mess = Connection.subscribe_and_receive1(topic, 1, 1)
+#     return mess
+#
+#
+# connection1 = connect_to_iotdm("127.0.0.1", 1883)
+# publish1(connection1, "/oneM2M/req/AE-ID/mockCSE", Test.show())
+# subscribe(connection1, "/oneM2M/resp/mockCSE/AE-ID")
 
+# Connection.publish("/oneM2M/req/AE-ID/mockCSE", Test.show())
+# mess = Connection.subscribe_and_receive1("/oneM2M/resp/mockCSE/AE-ID", 1, 1)
