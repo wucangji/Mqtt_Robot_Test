@@ -13,12 +13,15 @@ ${port}            1883
 
 *** Test Cases ***
 # Set Suite Variable
-#     [Documentation]    set a suite variable ${iserver}
-#     #==================================================
-#     #    AE Test
-#     #==================================================
+    # [Documentation]    set a suite variable ${iserver}
+    #==================================================
+    #    AE Test
+    #==================================================
 #     ${iserver} =    Connect To Iotdm    ${httphost}    ${httpuser}    ${httppass}    http
 #     Set Suite Variable    ${iserver}
+
+    # ${connection} =     Connect    ${mqtthost}    ${port}
+    # Set Suite Variable    ${connection}
 
 1.11 Valid Input for AE without name
     [Documentation]    Valid Input for AE without name
@@ -29,6 +32,8 @@ ${port}            1883
     ${connection} =     Connect    ${mqtthost}    ${port}
     Publish    /oneM2M/req/AE-ID/mockCSE    {\"op\" : \"1\",\"to\" : \"mockCSE\",\"rqi\" : \"1\",\"fr\" : \"AE-ID\",\"ty\" : \"2\",\"pc\" :{\"api\":\"mockApplication\",\"apn\":\"mockApp\",\"or\":\"http://ontology_URL\"}}
     ${response} =    Subscribe And Receive1    /oneM2M/resp/mockCSE/AE-ID    1    1
+    Response Is Correct    ${response}
+
 
 # 1.12 Valid Input for AE with name
 #     ${attr} =    Set Variable    "api":"jb","apn":"jb2","or":"http://hey/you","rr":true
@@ -50,8 +55,8 @@ ${port}            1883
 #     Should Start with    ${error}    Cannot create this resource [405]
 #     # -----------------    Update and Retrieve -------------
 
-# 1.15 Valid Update AE's label
-#     [Documentation]    Valid Update AE's label
+1.15 Valid Update AE's label
+    [Documentation]    Valid Update AE's label
 #     ${attr} =    Set Variable    "lbl":["aaa","bbb","ccc"]
 #     ${r} =    Update Resource    ${iserver}    InCSE1/ODL3    ${rt_ae}    ${attr}
 #     Response Is Correct    ${r}
@@ -60,6 +65,14 @@ ${port}            1883
 #     ${Json} =    Text    ${r}
 #     Should Contain    ${Json}    "aaa"    "bbb"    "ccc"
 #     Should Contain    ${r.json()['m2m:ae']['lbl']}    aaa    bbb    ccc
+
+    ${connection} =     Connect    ${mqtthost}    ${port}
+    Publish    /oneM2M/req/AE-ID/mockCSE    {\"op\" : \"3\",\"to\" : \"mockCSE/AE-ID\",\"rqi\" : \"1\",\"fr\" : \"AE-ID\",\"pc\" :{\"apn\":\"mockApp2\"}}
+    ${response} =    Subscribe And Receive1    /oneM2M/resp/mockCSE/AE-ID    1    1
+    Response Is Correct    ${response}
+    Should Contain    ${response['pc']}    mockApp2
+
+
 #     #==================================================
 #     #    Container Test
 #     #==================================================
@@ -266,7 +279,7 @@ ${port}            1883
 #     ${deleteRes} =    Delete Resource    ${iserver}    InCSE1/containerUnderCSE
 #     ${deleteRes} =    Delete Resource    ${iserver}    InCSE1/ODL3
 
-# *** Keywords ***
+*** Keywords ***
 # Connect And Create Resource
 #     [Arguments]    ${targetURI}    ${resoutceType}    ${attr}    ${resourceName}=${EMPTY}
 #     ${iserver} =    Connect To Iotdm    ${httphost}    ${httpuser}    ${httppass}    http
@@ -275,11 +288,7 @@ ${port}            1883
 #     ${status_code} =    Status Code    ${r}
 #     Should Be Equal As Integers    ${status_code}    201
 
-# Response Is Correct
-#     [Arguments]    ${r}
-#     ${status_code} =    Status Code    ${r}
-#     Should Be True    199 < ${status_code} < 299
-#     ${text} =    Text    ${r}
-#     LOG    ${text}
-#     ${json} =    Json    ${r}
-#     LOG    ${json}
+Response Is Correct
+    [Arguments]    ${r}
+    Should Be True    1999 < ${r['rsc']} < 2999
+

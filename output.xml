@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<robot generated="20151021 11:36:28.866" generator="Robot 2.9 (Python 2.7.10 on darwin)">
+<robot generated="20151021 16:38:35.469" generator="Robot 2.9 (Python 2.7.10 on darwin)">
 <suite source="/Users/canwu/PycharmProjects/Mqtt_Robot_Test/030LayerTest.robot" id="s1" name="030LayerTest">
 <test id="s1-t1" name="1.11 Valid Input for AE without name">
 <kw name="Connect" library="mqttlib">
@@ -11,9 +11,9 @@
 <assign>
 <var>${connection}</var>
 </assign>
-<msg timestamp="20151021 11:36:28.922" level="INFO">Connecting to 127.0.0.1 at port 1883</msg>
-<msg timestamp="20151021 11:36:28.925" level="INFO">${connection} = &lt;paho.mqtt.client.Client object at 0x110abbe10&gt;</msg>
-<status status="PASS" endtime="20151021 11:36:28.925" starttime="20151021 11:36:28.921"></status>
+<msg timestamp="20151021 16:38:35.524" level="INFO">Connecting to 127.0.0.1 at port 1883</msg>
+<msg timestamp="20151021 16:38:35.527" level="INFO">${connection} = &lt;paho.mqtt.client.Client object at 0x10ef35290&gt;</msg>
+<status status="PASS" endtime="20151021 16:38:35.527" starttime="20151021 16:38:35.523"></status>
 </kw>
 <kw name="Publish" library="mqttlib">
 <doc>Publish a message to a topic with specified qos and retained flag.</doc>
@@ -21,8 +21,8 @@
 <arg>/oneM2M/req/AE-ID/mockCSE</arg>
 <arg>{\"op\" : \"1\",\"to\" : \"mockCSE\",\"rqi\" : \"1\",\"fr\" : \"AE-ID\",\"ty\" : \"2\",\"pc\" :{\"api\":\"mockApplication\",\"apn\":\"mockApp\",\"or\":\"http://ontology_URL\"}}</arg>
 </arguments>
-<msg timestamp="20151021 11:36:28.926" level="INFO">Publish topic: /oneM2M/req/AE-ID/mockCSE, message: {"op" : "1","to" : "mockCSE","rqi" : "1","fr" : "AE-ID","ty" : "2","pc" :{"api":"mockApplication","apn":"mockApp","or":"http://ontology_URL"}}, qos: 0, retain: False</msg>
-<status status="PASS" endtime="20151021 11:36:28.926" starttime="20151021 11:36:28.926"></status>
+<msg timestamp="20151021 16:38:35.528" level="INFO">Publish topic: /oneM2M/req/AE-ID/mockCSE, message: {"op" : "1","to" : "mockCSE","rqi" : "1","fr" : "AE-ID","ty" : "2","pc" :{"api":"mockApplication","apn":"mockApp","or":"http://ontology_URL"}}, qos: 0, retain: False</msg>
+<status status="PASS" endtime="20151021 16:38:35.528" starttime="20151021 16:38:35.527"></status>
 </kw>
 <kw name="Subscribe And Receive1" library="mqttlib">
 <doc>Subscribe to a topic and return one message payloads received</doc>
@@ -34,25 +34,99 @@
 <assign>
 <var>${response}</var>
 </assign>
-<msg timestamp="20151021 11:36:28.927" level="INFO">Subscribing to topic: /oneM2M/resp/mockCSE/AE-ID</msg>
-<msg timestamp="20151021 11:36:29.934" level="INFO">${response} = {u'pc': u'{"ct":"20151021T153628Z","aei":"AE-ID","ri":"1t","lt":"20151021T153628Z","pi":"/mockCSE/2","api":"mockApplication","rn":"AE-ID"}', u'rqi': u'1', u'rsc': u'2001'}</msg>
-<status status="PASS" endtime="20151021 11:36:29.934" starttime="20151021 11:36:28.927"></status>
+<msg timestamp="20151021 16:38:35.529" level="INFO">Subscribing to topic: /oneM2M/resp/mockCSE/AE-ID</msg>
+<msg timestamp="20151021 16:38:36.539" level="INFO">${response} = {u'pc': u'{"ct":"20151021T203835Z","aei":"AE-ID","ri":"23","lt":"20151021T203835Z","pi":"/mockCSE/2","api":"mockApplication","rn":"AE-ID"}', u'rqi': u'1', u'rsc': u'2001'}</msg>
+<status status="PASS" endtime="20151021 16:38:36.539" starttime="20151021 16:38:35.528"></status>
+</kw>
+<kw name="Response Is Correct">
+<arguments>
+<arg>${response}</arg>
+</arguments>
+<kw name="Should Be True" library="BuiltIn">
+<doc>Fails if the given condition is not true.</doc>
+<arguments>
+<arg>1999 &lt; ${r['rsc']} &lt; 2999</arg>
+</arguments>
+<status status="PASS" endtime="20151021 16:38:36.542" starttime="20151021 16:38:36.540"></status>
+</kw>
+<status status="PASS" endtime="20151021 16:38:36.542" starttime="20151021 16:38:36.539"></status>
 </kw>
 <doc>Valid Input for AE without name</doc>
-<status status="PASS" endtime="20151021 11:36:29.934" critical="yes" starttime="20151021 11:36:28.920"></status>
+<status status="PASS" endtime="20151021 16:38:36.542" critical="yes" starttime="20151021 16:38:35.522"></status>
+</test>
+<test id="s1-t2" name="1.15 Valid Update AE's label">
+<kw name="Connect" library="mqttlib">
+<doc>Connect to an MQTT broker. This is a pre-requisite step for publish</doc>
+<arguments>
+<arg>${mqtthost}</arg>
+<arg>${port}</arg>
+</arguments>
+<assign>
+<var>${connection}</var>
+</assign>
+<msg timestamp="20151021 16:38:36.544" level="INFO">Connecting to 127.0.0.1 at port 1883</msg>
+<msg timestamp="20151021 16:38:36.545" level="INFO">${connection} = &lt;paho.mqtt.client.Client object at 0x10ef58390&gt;</msg>
+<status status="PASS" endtime="20151021 16:38:36.545" starttime="20151021 16:38:36.543"></status>
+</kw>
+<kw name="Publish" library="mqttlib">
+<doc>Publish a message to a topic with specified qos and retained flag.</doc>
+<arguments>
+<arg>/oneM2M/req/AE-ID/mockCSE</arg>
+<arg>{\"op\" : \"3\",\"to\" : \"mockCSE/AE-ID\",\"rqi\" : \"1\",\"fr\" : \"AE-ID\",\"pc\" :{\"apn\":\"mockApp2\"}}</arg>
+</arguments>
+<msg timestamp="20151021 16:38:36.546" level="INFO">Publish topic: /oneM2M/req/AE-ID/mockCSE, message: {"op" : "3","to" : "mockCSE/AE-ID","rqi" : "1","fr" : "AE-ID","pc" :{"apn":"mockApp2"}}, qos: 0, retain: False</msg>
+<status status="PASS" endtime="20151021 16:38:36.546" starttime="20151021 16:38:36.545"></status>
+</kw>
+<kw name="Subscribe And Receive1" library="mqttlib">
+<doc>Subscribe to a topic and return one message payloads received</doc>
+<arguments>
+<arg>/oneM2M/resp/mockCSE/AE-ID</arg>
+<arg>1</arg>
+<arg>1</arg>
+</arguments>
+<assign>
+<var>${response}</var>
+</assign>
+<msg timestamp="20151021 16:38:36.547" level="INFO">Subscribing to topic: /oneM2M/resp/mockCSE/AE-ID</msg>
+<msg timestamp="20151021 16:38:37.555" level="INFO">${response} = {u'pc': u'{"ct":"20151021T203835Z","or":"http://ontology_URL","aei":"AE-ID","ty":2,"ri":"23","lt":"20151021T203836Z","pi":"/mockCSE/2","api":"mockApplication","rn":"AE-ID","apn":"mockApp2"}', u'rqi': ...</msg>
+<status status="PASS" endtime="20151021 16:38:37.555" starttime="20151021 16:38:36.546"></status>
+</kw>
+<kw name="Response Is Correct">
+<arguments>
+<arg>${response}</arg>
+</arguments>
+<kw name="Should Be True" library="BuiltIn">
+<doc>Fails if the given condition is not true.</doc>
+<arguments>
+<arg>1999 &lt; ${r['rsc']} &lt; 2999</arg>
+</arguments>
+<status status="PASS" endtime="20151021 16:38:37.557" starttime="20151021 16:38:37.556"></status>
+</kw>
+<status status="PASS" endtime="20151021 16:38:37.558" starttime="20151021 16:38:37.555"></status>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<doc>Fails if ``item1`` does not contain ``item2`` one or more times.</doc>
+<arguments>
+<arg>${response['pc']}</arg>
+<arg>mockApp2</arg>
+</arguments>
+<status status="PASS" endtime="20151021 16:38:37.558" starttime="20151021 16:38:37.558"></status>
+</kw>
+<doc>Valid Update AE's label</doc>
+<status status="PASS" endtime="20151021 16:38:37.558" critical="yes" starttime="20151021 16:38:36.542"></status>
 </test>
 <doc>Test for layers AE/CONTAINER/CONTENTINSTANCE</doc>
-<status status="PASS" endtime="20151021 11:36:29.935" starttime="20151021 11:36:28.869"></status>
+<status status="PASS" endtime="20151021 16:38:37.559" starttime="20151021 16:38:35.474"></status>
 </suite>
 <statistics>
 <total>
-<stat fail="0" pass="1">Critical Tests</stat>
-<stat fail="0" pass="1">All Tests</stat>
+<stat fail="0" pass="2">Critical Tests</stat>
+<stat fail="0" pass="2">All Tests</stat>
 </total>
 <tag>
 </tag>
 <suite>
-<stat fail="0" id="s1" name="030LayerTest" pass="1">030LayerTest</stat>
+<stat fail="0" id="s1" name="030LayerTest" pass="2">030LayerTest</stat>
 </suite>
 </statistics>
 <errors>
